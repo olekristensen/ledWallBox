@@ -20,8 +20,7 @@ public:
     static const int maxBlobs = 8;
     static const int thresholdLevel = 128;
 
-    const Mode k_fmt7Mode = MODE_0;
-    const PixelFormat k_fmt7PixFmt = PIXEL_FORMAT_RAW8;
+    const PixelFormat k_PixFmt = PIXEL_FORMAT_RAW12;
 
     const unsigned int k_HDRCtrl = 0x1800;
 
@@ -213,6 +212,44 @@ public:
             pStreamChannel->sourcePort );
     }
 
+    bool PollForTriggerReady( GigECamera* pCam )
+    {
+        const unsigned int k_softwareTrigger = 0x62C;
+        Error error;
+        unsigned int regVal = 0;
+
+        do
+        {
+            error = pCam->ReadRegister( k_softwareTrigger, &regVal );
+            if (error != PGRERROR_OK)
+            {
+                catchError( error );
+                return false;
+            }
+
+        }
+        while ( (regVal >> 31) != 0 );
+
+        return true;
+    }
+
+    bool FireSoftwareTrigger( GigECamera* pCam )
+    {
+        const unsigned int k_softwareTrigger = 0x62C;
+        const unsigned int k_fireVal = 0x80000000;
+        Error error;
+
+        error = pCam->WriteRegister( k_softwareTrigger, k_fireVal );
+        if (error != PGRERROR_OK)
+        {
+            catchError( error );
+            return false;
+        }
+
+        return true;
+    }
+
+
     void load(string filename)
     {
         ofxXmlSettings cameraSettings;
@@ -251,9 +288,9 @@ public:
             GigEImageSettings imageSettings;
             imageSettings.offsetX = (imageSettingsInfo.maxWidth-camWidth)/2;
             imageSettings.offsetY = (imageSettingsInfo.maxHeight-camHeight)/2;
-            imageSettings.height = camWidth;
-            imageSettings.width = camHeight;
-            imageSettings.pixelFormat = PIXEL_FORMAT_RAW8;
+            imageSettings.height = camHeight;
+            imageSettings.width = camWidth;
+            imageSettings.pixelFormat = k_PixFmt;
 
             printf( "Setting GigE image settings...\n" );
 
@@ -266,7 +303,7 @@ public:
 
             GigEProperty packetDelayProp;
             packetDelayProp.propType = PACKET_DELAY;
-            packetDelayProp.value = 1800;
+            packetDelayProp.value = static_cast<unsigned int>(2400);
             catchError(camera->SetGigEProperty(&packetDelayProp));
 
             EmbeddedImageInfo embeddedInfo;
@@ -284,47 +321,68 @@ public:
             embeddedInfo.ROIPosition.onOff = true;
             catchError(camera->SetEmbeddedImageInfo( &embeddedInfo ));
 
+            Property framerate(FRAME_RATE);
+            framerate.onOff = true;
+            framerate.absControl = true;
+            framerate.absValue = cameraSettings.getValue("framerate", 12.0); // 2076 is 12 fps
+            framerate.autoManualMode = false;
+            catchError(camera->SetProperty(&framerate));
+
             /** STARTING HERE **/
+
+// Get current trigger settings
+            TriggerMode triggerMode;
+            catchError(camera->GetTriggerMode( &triggerMode ));
+            // Set camera to trigger mode 0
+            triggerMode.onOff = false;
+            triggerMode.mode = 0;
+            triggerMode.parameter = 0;
+            triggerMode.source = 7;
+
+            catchError(camera->SetTriggerMode( &triggerMode ));
 
             catchError(camera->StartCapture());
 
             Property brightness(BRIGHTNESS);
             brightness.autoManualMode = false;
-            brightness.valueA = cameraSettings.getValue("brightness", 0);
+            brightness.absControl = true;
+            brightness.absValue = cameraSettings.getValue("brightness", 0.0);
             catchError(camera->SetProperty(&brightness));
 
             Property autoExposure(AUTO_EXPOSURE);
             autoExposure.onOff = true;
-            autoExposure.autoManualMode = true;
-            autoExposure.valueA = cameraSettings.getValue("exposure", 0);
+            autoExposure.autoManualMode = false;
+            autoExposure.absControl = true;
+            autoExposure.absValue = cameraSettings.getValue("exposure", 1.0);
             catchError(camera->SetProperty(&autoExposure));
 
             Property gamma(GAMMA);
-            gamma.onOff = false;
+            gamma.onOff = true;
+            gamma.autoManualMode = false;
+            gamma.absControl = true;
+            gamma.absValue = 1.0;
             catchError(camera->SetProperty(&gamma));
 
             Property shutter(SHUTTER);
-            shutter.valueA = cameraSettings.getValue("shutter", 500);
-            shutter.autoManualMode = true;
+            shutter.absControl = true;
+            shutter.absValue = cameraSettings.getValue("shutter", 80.0);
+            shutter.autoManualMode = false;
+            shutter.onOff = true;
             catchError(camera->SetProperty(&shutter));
 
             Property gain(GAIN);
-            gain.valueA = cameraSettings.getValue("gain", 5); // 5 is no gain
-            gain.autoManualMode = true;
+            gain.absValue = cameraSettings.getValue("gain", 3.0);
+            gain.autoManualMode = false;
+            gain.absControl = true;
+            gain.onOff = true;
             catchError(camera->SetProperty(&gain));
 
             Property whitebalance(WHITE_BALANCE);
             whitebalance.valueA = cameraSettings.getValue("whitebalanceRed", 512);
             whitebalance.valueB = cameraSettings.getValue("whitebalanceBlue", 512);
             whitebalance.autoManualMode = false;
-            whitebalance.onOff = false;
+            whitebalance.onOff = true;
             catchError(camera->SetProperty(&whitebalance));
-
-            Property framerate(FRAME_RATE);
-            framerate.onOff = true;
-            framerate.valueA = cameraSettings.getValue("framerate", 12);
-            framerate.autoManualMode = false;
-            catchError(camera->SetProperty(&framerate));
 
             cameras.push_back(camera);
 
@@ -342,6 +400,23 @@ public:
         {
             GigECamera& camera = *(cameras[i]);
             Image rawImage;
+/*
+            Property gain(GAIN);
+            gain.absValue = fmodf(ofGetElapsedTimef(), 4.0);
+            gain.autoManualMode = false;
+            gain.absControl = true;
+            gain.onOff = true;
+            catchError(camera.SetProperty(&gain));
+*/
+//            PollForTriggerReady(&camera);
+
+            // Fire software trigger
+/*            bool retVal = FireSoftwareTrigger( &camera );
+            if ( !retVal )
+            {
+                printf("\nError firing software trigger!\n");
+            }
+*/
             catchError(camera.RetrieveBuffer(&rawImage));
 
             PixelFormat pixFormat;
