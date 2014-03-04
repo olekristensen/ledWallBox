@@ -6,7 +6,7 @@
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="addons/;src/;build config/;addons/ofxUI/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/flann/;addons/ofxOpenCv/libs/opencv/include/opencv/;addons/ofxOpenCv/libs/opencv/include/opencv2/gpu/;addons/ofxOsc/src/;addons/ofxCv/libs/CLD/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/video/;addons/ofxOpenCv/libs/opencv/include/opencv2/ts/;addons/ofxCv/libs/ofxCv/src/;addons/ofxOsc/libs/oscpack/src/osc/;addons/ofxOsc/libs/oscpack/src/ip/;addons/ofxOsc/libs/oscpack/src/ip/win32/;addons/ofxOpenCv/src/;addons/ofxCv/libs/ofxCv/include/ofxCv/;addons/ofxOpenCv/libs/opencv/include/opencv2/core/;addons/ofxThreadedImageLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/;addons/ofxRemoteUI/src/;addons/ofxKinect/libs/libfreenect/include/;addons/ofxXmlSettings/libs/;addons/ofxKinect/libs/libfreenect/src/;addons/ofxCv/libs/CLD/include/CLD/;addons/ofx3DModelLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/;addons/ofx3DModelLoader/src/3DS/;addons/ofxKinect/libs/libusb-1.0/include/libusb-1.0/;addons/ofxOpenCv/libs/opencv/include/opencv2/legacy/;addons/ofxXmlSettings/src/;addons/ofxOsc/libs/oscpack/src/ip/posix/;addons/ofxKinect/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/;addons/ofxCv/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/;addons/ofxOpenCv/libs/opencv/include/opencv2/ml/;addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/;addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/;addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/;" />
+		<Option virtualFolders="addons/;addons/ofxArtnet/build config/;addons/ofxUI/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/flann/;addons/ofxOpenCv/libs/opencv/include/opencv/;addons/ofxOpenCv/libs/opencv/include/opencv2/gpu/;addons/ofxOsc/src/;addons/ofxCv/libs/CLD/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/video/;addons/ofxOpenCv/libs/opencv/include/opencv2/ts/;addons/ofxCv/libs/ofxCv/src/;addons/ofxOsc/libs/oscpack/src/osc/;addons/ofxOsc/libs/oscpack/src/ip/;addons/ofxOsc/libs/oscpack/src/ip/win32/;addons/ofxOpenCv/src/;addons/ofxCv/libs/ofxCv/include/ofxCv/;addons/ofxOpenCv/libs/opencv/include/opencv2/core/;addons/ofxThreadedImageLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/;addons/ofxRemoteUI/src/;addons/ofxKinect/libs/libfreenect/include/;addons/ofxXmlSettings/libs/;addons/ofxKinect/libs/libfreenect/src/;addons/ofxCv/libs/CLD/include/CLD/;addons/ofx3DModelLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/;addons/ofx3DModelLoader/src/3DS/;addons/ofxKinect/libs/libusb-1.0/include/libusb-1.0/;addons/ofxOpenCv/libs/opencv/include/opencv2/legacy/;addons/ofxXmlSettings/src/;addons/ofxOsc/libs/oscpack/src/ip/posix/;addons/ofxKinect/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/;addons/ofxCv/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/;addons/ofxOpenCv/libs/opencv/include/opencv2/ml/;addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/;addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/;addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/;addons/ofxArtnet/;addons/ofxArtnet/src/;addons/ofxArtnet/libs/;addons/ofxArtnet/libs/artnet/;addons/ofxArtnet/libs/artnet/include/;addons/ofxArtnet/libs/artnet/src/;src/;" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/$(PROJECT_NAME)_debug" prefix_auto="1" extension_auto="1" />
@@ -50,6 +50,57 @@
 		</Unit>
 		<Unit filename="../../../addons/ofx3DModelLoader/src/ofx3dModelLoader.cpp">
 			<Option virtualFolder="addons/ofx3DModelLoader/src" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/artnet.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/common.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/misc.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/packets.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/private.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/tod.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/include/unistd_d.h">
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/include/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/artnet.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/misc.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/network.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/receive.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/tod.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/libs/artnet/src/transmit.c">
+			<Option compilerVar="CC" />
+			<Option virtualFolder="addons/ofxArtnet/libs/artnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/src/ofxArtnet.cpp">
+			<Option virtualFolder="addons/ofxArtnet/src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxArtnet/src/ofxArtnet.h">
+			<Option virtualFolder="addons/ofxArtnet/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxCv/libs/CLD/include/CLD/ETF.h">
 			<Option virtualFolder="addons/ofxCv/libs/CLD/include/CLD" />
@@ -930,7 +981,7 @@
 			<Option virtualFolder="addons/ofxXmlSettings/src" />
 		</Unit>
 		<Unit filename="config.make">
-			<Option virtualFolder="build config" />
+			<Option virtualFolder="addons/ofxArtnet/build config/" />
 		</Unit>
 		<Unit filename="src/CameraController.h">
 			<Option virtualFolder="src/" />

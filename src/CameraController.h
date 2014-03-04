@@ -20,7 +20,7 @@ public:
     static const int maxBlobs = 8;
     static const int thresholdLevel = 128;
 
-    const PixelFormat k_PixFmt = PIXEL_FORMAT_RAW12;
+    const PixelFormat k_PixFmt = PIXEL_FORMAT_RAW8;
 
     const unsigned int k_HDRCtrl = 0x1800;
 
@@ -37,10 +37,50 @@ public:
     const unsigned int k_HDROn = 0x82000000;
     const unsigned int k_HDROff = 0x80000000;
 
+    float shutterWasSetToAbs = 0.0;
 
     vector<GigECamera*> cameras;
+    vector<Image*> rawImages;
+    vector<ImageMetadata> imagesMetadata;
     vector<ofxCvColorImage*> images;
-//	vector<ofxCvContourFinder*> contourFinders;
+
+
+
+    float getAbsShutterValueFromRegister(unsigned int value)
+    {
+        typedef union _AbsValueConversion
+        {
+            unsigned int ulValue;
+            float fValue;
+        } AbsValueConversion;
+
+        AbsValueConversion converted;
+        converted.ulValue = (value & 0xFFFFu);
+
+        std::cout << converted.fValue << std::endl;
+
+        return converted.fValue;
+
+        value = (value & 0xFFFFu);
+        float absValue = 0.0;
+        std::cout << value << std::endl;
+        float unitMillis = 0.01;
+        if(value < 1025) {
+            absValue = unitMillis * value;
+            std::cout << absValue << std::endl;
+            return absValue;
+        }
+        unsigned int exponent = (((value - 1024)/512)+1);
+        absValue = 10.24;
+        for(int i = 1; i < exponent; i++)
+        {
+            unitMillis = 0.01*pow(2,i);
+            absValue += unitMillis * 512;
+        }
+        unitMillis = 0.01*pow(2,exponent);
+        absValue += (value - (1024+((exponent-1)*512)))*unitMillis;
+        return absValue;
+    }
 
     CameraController()
     {
@@ -52,9 +92,10 @@ public:
         {
             cameras[i]->StopCapture();
             cameras[i]->Disconnect();
-            delete cameras[i];
+            delete rawImages[i];
             delete images[i];
-//			delete contourFinders[i];
+            delete cameras[i];
+
         }
     }
 
@@ -256,185 +297,224 @@ public:
         cameraSettings.loadFile(filename);
 
         BusManager busMgr;
+        catchError(busMgr.ForceAllIPAddressesAutomatically());
         unsigned int numCameras;
         catchError(busMgr.GetNumOfCameras(&numCameras));
+        printf("found %u cameras", numCameras);
+        if(numCameras < 1) exit(0);
         for(unsigned int i = 0; i < numCameras; i++)
         {
             GigECamera* camera = new GigECamera();
+            Image* rawImage = new Image();
 
             PGRGuid guid;
             CameraInfo camInfo;
 
-            catchError(busMgr.GetCameraFromIndex(i, &guid));
-            catchError(camera->Connect(&guid));
-            catchError(camera->GetCameraInfo(&camInfo));
-            printInfo(camInfo);
+            Error error;
 
-            unsigned int numStreamChannels = 0;
-            catchError(camera->GetNumStreamChannels( &numStreamChannels ));
-            for (unsigned int i=0; i < numStreamChannels; i++)
+            error = busMgr.GetCameraFromIndex(i, &guid);
+            if(error == PGRERROR_OK)
             {
-                GigEStreamChannel streamChannel;
-                catchError(camera->GetGigEStreamChannelInfo( i, &streamChannel ));
-                printf( "\nPrinting stream channel information for channel %u:\n", i );
-                PrintStreamChannelInfo( &streamChannel );
+                error = camera->Connect(&guid);
+                if(error == PGRERROR_OK)
+                {
+                    error = camera->GetCameraInfo(&camInfo);
+                    if(error == PGRERROR_OK)
+                    {
+                        printInfo(camInfo);
+
+                        unsigned int numStreamChannels = 0;
+                        catchError(camera->GetNumStreamChannels( &numStreamChannels ));
+                        for (unsigned int i=0; i < numStreamChannels; i++)
+                        {
+                            GigEStreamChannel streamChannel;
+                            catchError(camera->GetGigEStreamChannelInfo( i, &streamChannel ));
+                            printf( "\nPrinting stream channel information for channel %u:\n", i );
+                            PrintStreamChannelInfo( &streamChannel );
+                        }
+
+                        printf( "Querying GigE image setting information...\n" );
+
+                        GigEImageSettingsInfo imageSettingsInfo;
+                        catchError(camera->GetGigEImageSettingsInfo( &imageSettingsInfo ));
+
+                        GigEImageSettings imageSettings;
+                        imageSettings.offsetX = (imageSettingsInfo.maxWidth-camWidth)/2;
+                        imageSettings.offsetY = (imageSettingsInfo.maxHeight-camHeight)/2;
+                        imageSettings.height = camHeight;
+                        imageSettings.width = camWidth;
+                        imageSettings.pixelFormat = k_PixFmt;
+
+                        printf( "Setting GigE image settings...\n" );
+
+                        catchError(camera->SetGigEImageSettings( &imageSettings ));
+
+                        GigEProperty packetSizeProp;
+                        packetSizeProp.propType = PACKET_SIZE;
+                        packetSizeProp.value = static_cast<unsigned int>(9000);
+                        catchError(camera->SetGigEProperty(&packetSizeProp));
+
+                        GigEProperty packetDelayProp;
+                        packetDelayProp.propType = PACKET_DELAY;
+                        packetDelayProp.value = static_cast<unsigned int>(1800);
+                        catchError(camera->SetGigEProperty(&packetDelayProp));
+
+                        EmbeddedImageInfo embeddedInfo;
+                        catchError(camera->GetEmbeddedImageInfo( &embeddedInfo ));
+
+                        embeddedInfo.timestamp.onOff = true;
+                        embeddedInfo.gain.onOff = true;
+                        embeddedInfo.shutter.onOff = true;
+                        embeddedInfo.brightness.onOff = true;
+                        embeddedInfo.exposure.onOff = true;
+                        embeddedInfo.whiteBalance.onOff = true;
+                        embeddedInfo.frameCounter.onOff = true;
+                        embeddedInfo.strobePattern.onOff = true;
+                        embeddedInfo.GPIOPinState.onOff = true;
+                        embeddedInfo.ROIPosition.onOff = true;
+                        catchError(camera->SetEmbeddedImageInfo( &embeddedInfo ));
+
+                        Property framerate(FRAME_RATE);
+                        framerate.onOff = true;
+                        framerate.absControl = true;
+                        framerate.absValue = cameraSettings.getValue("framerate", 12.0); // 2076 is 12 fps
+                        framerate.autoManualMode = false;
+                        catchError(camera->SetProperty(&framerate));
+
+                        /** STARTING HERE **/
+
+                        // Get current trigger settings
+
+                        TriggerMode triggerMode;
+                        catchError(camera->GetTriggerMode( &triggerMode ));
+                        // Set camera to trigger mode 0
+                        triggerMode.onOff = false;
+                        triggerMode.mode = 0;
+                        triggerMode.parameter = 0;
+                        triggerMode.source = 7;
+
+                        catchError(camera->SetTriggerMode( &triggerMode ));
+
+                        catchError(camera->StartCapture());
+
+                        Property brightness(BRIGHTNESS);
+                        brightness.autoManualMode = false;
+                        brightness.absControl = true;
+                        brightness.absValue = cameraSettings.getValue("brightness", 0.0);
+                        catchError(camera->SetProperty(&brightness));
+
+                        Property autoExposure(AUTO_EXPOSURE);
+                        autoExposure.onOff = true;
+                        autoExposure.autoManualMode = false;
+                        autoExposure.absControl = true;
+                        autoExposure.absValue = cameraSettings.getValue("exposure", 1.0);
+                        catchError(camera->SetProperty(&autoExposure));
+
+                        Property gamma(GAMMA);
+                        gamma.onOff = true;
+                        gamma.autoManualMode = false;
+                        gamma.absControl = true;
+                        gamma.absValue = 1.0;
+                        catchError(camera->SetProperty(&gamma));
+
+                        Property shutter(SHUTTER);
+                        shutter.absControl = true;
+                        shutter.absValue = cameraSettings.getValue("shutter", 1.0); // ms
+                        shutter.autoManualMode = false;
+                        shutter.onOff = true;
+                        catchError(camera->SetProperty(&shutter));
+
+                        Property gain(GAIN);
+                        gain.absValue = cameraSettings.getValue("gain", 3.0);
+                        gain.autoManualMode = false;
+                        gain.absControl = true;
+                        gain.onOff = true;
+                        catchError(camera->SetProperty(&gain));
+
+                        Property whitebalance(WHITE_BALANCE);
+                        whitebalance.valueA = cameraSettings.getValue("whitebalanceRed", 512);
+                        whitebalance.valueB = cameraSettings.getValue("whitebalanceBlue", 512);
+                        whitebalance.autoManualMode = true;
+                        whitebalance.onOff = true;
+                        catchError(camera->SetProperty(&whitebalance));
+
+                        cameras.push_back(camera);
+                        rawImages.push_back(rawImage);
+
+                        ofxCvColorImage* image = new ofxCvColorImage();
+                        image->allocate(camWidth, camHeight);
+                        images.push_back(image);
+
+
+                    }
+                    else
+                    {
+                        catchError(error);
+                    }
+                }
+                else
+                {
+                    catchError(error);
+                }
+
             }
-
-            printf( "Querying GigE image setting information...\n" );
-
-            GigEImageSettingsInfo imageSettingsInfo;
-            catchError(camera->GetGigEImageSettingsInfo( &imageSettingsInfo ));
-
-            GigEImageSettings imageSettings;
-            imageSettings.offsetX = (imageSettingsInfo.maxWidth-camWidth)/2;
-            imageSettings.offsetY = (imageSettingsInfo.maxHeight-camHeight)/2;
-            imageSettings.height = camHeight;
-            imageSettings.width = camWidth;
-            imageSettings.pixelFormat = k_PixFmt;
-
-            printf( "Setting GigE image settings...\n" );
-
-            catchError(camera->SetGigEImageSettings( &imageSettings ));
-
-            GigEProperty packetSizeProp;
-            packetSizeProp.propType = PACKET_SIZE;
-            packetSizeProp.value = static_cast<unsigned int>(9000);
-            catchError(camera->SetGigEProperty(&packetSizeProp));
-
-            GigEProperty packetDelayProp;
-            packetDelayProp.propType = PACKET_DELAY;
-            packetDelayProp.value = static_cast<unsigned int>(2400);
-            catchError(camera->SetGigEProperty(&packetDelayProp));
-
-            EmbeddedImageInfo embeddedInfo;
-            catchError(camera->GetEmbeddedImageInfo( &embeddedInfo ));
-
-            embeddedInfo.timestamp.onOff = true;
-            embeddedInfo.gain.onOff = true;
-            embeddedInfo.shutter.onOff = true;
-            embeddedInfo.brightness.onOff = true;
-            embeddedInfo.exposure.onOff = true;
-            embeddedInfo.whiteBalance.onOff = true;
-            embeddedInfo.frameCounter.onOff = true;
-            embeddedInfo.strobePattern.onOff = true;
-            embeddedInfo.GPIOPinState.onOff = true;
-            embeddedInfo.ROIPosition.onOff = true;
-            catchError(camera->SetEmbeddedImageInfo( &embeddedInfo ));
-
-            Property framerate(FRAME_RATE);
-            framerate.onOff = true;
-            framerate.absControl = true;
-            framerate.absValue = cameraSettings.getValue("framerate", 12.0); // 2076 is 12 fps
-            framerate.autoManualMode = false;
-            catchError(camera->SetProperty(&framerate));
-
-            /** STARTING HERE **/
-
-// Get current trigger settings
-            TriggerMode triggerMode;
-            catchError(camera->GetTriggerMode( &triggerMode ));
-            // Set camera to trigger mode 0
-            triggerMode.onOff = false;
-            triggerMode.mode = 0;
-            triggerMode.parameter = 0;
-            triggerMode.source = 7;
-
-            catchError(camera->SetTriggerMode( &triggerMode ));
-
-            catchError(camera->StartCapture());
-
-            Property brightness(BRIGHTNESS);
-            brightness.autoManualMode = false;
-            brightness.absControl = true;
-            brightness.absValue = cameraSettings.getValue("brightness", 0.0);
-            catchError(camera->SetProperty(&brightness));
-
-            Property autoExposure(AUTO_EXPOSURE);
-            autoExposure.onOff = true;
-            autoExposure.autoManualMode = false;
-            autoExposure.absControl = true;
-            autoExposure.absValue = cameraSettings.getValue("exposure", 1.0);
-            catchError(camera->SetProperty(&autoExposure));
-
-            Property gamma(GAMMA);
-            gamma.onOff = true;
-            gamma.autoManualMode = false;
-            gamma.absControl = true;
-            gamma.absValue = 1.0;
-            catchError(camera->SetProperty(&gamma));
-
-            Property shutter(SHUTTER);
-            shutter.absControl = true;
-            shutter.absValue = cameraSettings.getValue("shutter", 80.0);
-            shutter.autoManualMode = false;
-            shutter.onOff = true;
-            catchError(camera->SetProperty(&shutter));
-
-            Property gain(GAIN);
-            gain.absValue = cameraSettings.getValue("gain", 3.0);
-            gain.autoManualMode = false;
-            gain.absControl = true;
-            gain.onOff = true;
-            catchError(camera->SetProperty(&gain));
-
-            Property whitebalance(WHITE_BALANCE);
-            whitebalance.valueA = cameraSettings.getValue("whitebalanceRed", 512);
-            whitebalance.valueB = cameraSettings.getValue("whitebalanceBlue", 512);
-            whitebalance.autoManualMode = false;
-            whitebalance.onOff = true;
-            catchError(camera->SetProperty(&whitebalance));
-
-            cameras.push_back(camera);
-
-            ofxCvColorImage* image = new ofxCvColorImage();
-            image->allocate(camWidth, camHeight);
-            images.push_back(image);
-
-//			contourFinders.push_back(new ofxCvContourFinder());
+            else
+            {
+                catchError(error);
+            }
         }
     }
 
     void update()
     {
+        imagesMetadata.clear();
+
         for(unsigned int i = 0; i < cameras.size(); i++)
         {
             GigECamera& camera = *(cameras[i]);
-            Image rawImage;
-/*
-            Property gain(GAIN);
-            gain.absValue = fmodf(ofGetElapsedTimef(), 4.0);
-            gain.autoManualMode = false;
-            gain.absControl = true;
-            gain.onOff = true;
-            catchError(camera.SetProperty(&gain));
-*/
+
+            shutterWasSetToAbs = pow(1000./(fmodf(ofGetElapsedTimef()*20, 2000.0)+5),2);
+            Image tempImage;
+            Property shutter(SHUTTER);
+            shutter.absValue = shutterWasSetToAbs;
+            shutter.autoManualMode = false;
+            shutter.absControl = true;
+            shutter.onOff = true;
+            catchError(camera.SetProperty(&shutter));
+
 //            PollForTriggerReady(&camera);
 
             // Fire software trigger
-/*            bool retVal = FireSoftwareTrigger( &camera );
-            if ( !retVal )
+            /*            bool retVal = FireSoftwareTrigger( &camera );
+                        if ( !retVal )
+                        {
+                            printf("\nError firing software trigger!\n");
+                        }
+            */
+            Error error = camera.RetrieveBuffer(&tempImage);
+            if(error == PGRERROR_OK)
             {
-                printf("\nError firing software trigger!\n");
+                imagesMetadata.push_back(tempImage.GetMetadata());
+                rawImages[i] = &tempImage;
+
+                PixelFormat pixFormat;
+                unsigned int rows, cols, stride;
+                tempImage.GetDimensions( &rows, &cols, &stride, &pixFormat );
+                tempImage.SetColorProcessing(NEAREST_NEIGHBOR);
+                // Create a converted image
+                Image convertedImage;
+
+                // Convert the raw image
+                catchError(tempImage.Convert( PIXEL_FORMAT_RGB8, &convertedImage ));
+
+                memcpy(images[i]->getPixels(), convertedImage.GetData(), camWidth * camHeight  * 3);
+                images[i]->flagImageChanged();
+
             }
-*/
-            catchError(camera.RetrieveBuffer(&rawImage));
-
-            PixelFormat pixFormat;
-            unsigned int rows, cols, stride;
-            rawImage.GetDimensions( &rows, &cols, &stride, &pixFormat );
-            rawImage.SetColorProcessing(NEAREST_NEIGHBOR);
-            // Create a converted image
-            Image convertedImage;
-
-            // Convert the raw image
-            catchError(rawImage.Convert( PIXEL_FORMAT_RGB8, &convertedImage ));
-
-            memcpy(images[i]->getPixels(), convertedImage.GetData(), camWidth * camHeight  * 3);
-            images[i]->flagImageChanged();
-//			images[i]->threshold(thresholdLevel);
-
-            //int n = camWidth * camHeight;
-            //contourFinders[i]->findContours(*images[i], minBlobArea * n, maxBlobArea * n, maxBlobs, false);
+            else
+            {
+                catchError(error);
+            }
         }
     }
 
@@ -448,12 +528,28 @@ public:
         for(unsigned int i = 0; i < cameras.size(); i++)
         {
             images[i]->draw(0, 0);
-            //contourFinders[i]->draw();
+
+            ImageMetadata metadata = imagesMetadata[i];
+
+            Property shutter(SHUTTER);
+            catchError(cameras[i]->GetProperty(&shutter));
+
+            ofDrawBitmapString("Image Metadata", 10, camHeight+200);
+            ofDrawBitmapString(ofToString(metadata.embeddedShutter), 10, camHeight +40);
+            ofDrawBitmapString(ofToString(getAbsShutterValueFromRegister(metadata.embeddedShutter)), 10, camHeight +80);
+            ofDrawBitmapString(ofToString(shutterWasSetToAbs), 10, camHeight +120);
+            ofDrawBitmapString(ofToString(metadata.embeddedShutter), 10, camHeight +160);
+
+            ofDrawBitmapString("Camera Metadata", 300, camHeight+200);
+            ofDrawBitmapString(ofToString(shutter.valueA), 300, camHeight +40);
+            ofDrawBitmapString(ofToString(getAbsShutterValueFromRegister(shutter.valueA)), 300, camHeight +80);
+            ofDrawBitmapString(ofToString(shutter.absValue), 300, camHeight +120);
+            ofDrawBitmapString(ofToString(shutter.valueA), 300, camHeight +160);
+
             ofTranslate(camWidth, 0);
         }
         glPopMatrix();
     }
 };
-
 
 #endif // CAMERACONTROLLER_H_INCLUDED

@@ -1,3 +1,4 @@
+ofxArtnet
 ofxOsc
 ofxXmlSettings
 ofx3DModelLoader
