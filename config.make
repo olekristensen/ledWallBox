@@ -6,8 +6,8 @@
 ################################################################################
 # FLYCAPTURE headers and libs
 ################################################################################
-USER_CFLAGS = -I/usr/include/flycapture
-USER_LDFLAGS = -lflycapture
+USER_CFLAGS = -I/usr/include/flycapture 
+USER_LDFLAGS = -lflycapture -lola -lolacommon -lprotobuf
 
 ################################################################################
 # OF ROOT
