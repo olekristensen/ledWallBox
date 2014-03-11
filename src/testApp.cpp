@@ -137,6 +137,8 @@ void testApp::setup()
     // set the direction of the light
     directionalLight.setOrientation( ofVec3f(-45, -45, 0) );
     ofSetSmoothLighting(true);
+
+    ofSetFrameRate(60);
 }
 
 ofVec3f testApp::addTesselation(ofVec3f _origin, int _size, int _width, int _height, ofVec3f** _tesselationMap)
@@ -197,9 +199,10 @@ ofVec3f testApp::addTesselation(ofVec3f _origin, int _size, int _width, int _hei
     return firstOffset;
 }
 
-void testApp::setGUI(){
+void testApp::setGUI()
+{
 
-	gui = new ofxUISuperCanvas("LEDlys Tesselation 0.9b");
+    gui = new ofxUISuperCanvas("LEDlys Tesselation 0.9b");
 //    gui->addSpacer();
 //    gui->addLabel("Press 'h' to Hide GUIs", OFX_UI_FONT_SMALL);
 
@@ -208,11 +211,11 @@ void testApp::setGUI(){
     gui->setFontSize(OFX_UI_FONT_MEDIUM, 8);
     gui->setFontSize(OFX_UI_FONT_SMALL, 6);
     gui->addSpacer();
-	gui->addLabel("");
-	gui->addLabel("Temperature", OFX_UI_FONT_LARGE);
+    gui->addLabel("");
+    gui->addLabel("Temperature", OFX_UI_FONT_LARGE);
     gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
-	gui->addRangeSlider("tRange", kelvinWarm, kelvinCold, &kelvinWarmRange, &kelvinColdRange);
+    gui->addRangeSlider("tRange", kelvinWarm, kelvinCold, &kelvinWarmRange, &kelvinColdRange);
     gui->addSpacer();
     gui->addLabel("Speed", OFX_UI_FONT_SMALL);
     gui->addSlider("tSpeed",0,1,&temperatureSpeed);
@@ -220,17 +223,21 @@ void testApp::setGUI(){
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
     gui->addSlider("tSpread",0,1,&temperatureSpread);
     gui->addSpacer();
-	gui->addLabel("");
-	gui->addLabel("Brightness", OFX_UI_FONT_LARGE);
+    gui->addLabel("");
+    gui->addLabel("Brightness", OFX_UI_FONT_LARGE);
     gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
-	gui->addRangeSlider("bRange", 0, 1, &brightnessRangeFrom, &brightnessRangeTo);
+    gui->addRangeSlider("bRange", 0, 1, &brightnessRangeFrom, &brightnessRangeTo);
     gui->addSpacer();
     gui->addLabel("Speed", OFX_UI_FONT_SMALL);
     gui->addSlider("bSpeed",0,1,&brightnessSpeed);
     gui->addSpacer();
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
     gui->addSlider("bSpread",0,1,&brightnessSpread);
+    gui->addSpacer();
+    gui->addLabel("");
+    gui->addLabelButton("Save", bSaveSettings);
+    gui->addLabelButton("Load", bLoadSettings);
     gui->addSpacer();
     gui->addLabel("");
     gui->addFPS(OFX_UI_FONT_SMALL);
@@ -247,9 +254,47 @@ void testApp::setGUI(){
 
 void testApp::guiEvent(ofxUIEventArgs &e)
 {
-	string name = e.getName();
-	int kind = e.getKind();
-//	cout << "got event from: " << name << endl;
+    string name = e.getName();
+    int kind = e.getKind();
+    //cout << "got event from: " << name << endl;
+    if(name == "Save")
+    {
+        ofxUIButton *button = (ofxUIButton *) e.getButton();
+        if(button->getValue())
+        {
+            ofFileDialogResult dr = ofSystemSaveDialog( ofToDataPath("settings")+"/settings.xml", "Save settings");
+            if(dr.bSuccess)
+            {
+                ofFile file(dr.filePath);
+                if(file.getExtension() != "xml")
+                {
+                    file = ofFile(dr.filePath + ".xml");
+                }
+                gui->saveSettings(file.getAbsolutePath());
+            }
+        }
+    }
+    else if(name == "Load")
+    {
+        ofxUIButton *button = (ofxUIButton *) e.getButton();
+        if(button->getValue())
+        {
+
+            ofFileDialogResult dr = ofSystemLoadDialog("Load settings", false, ofToDataPath("settings")+"/*.xml");
+
+            if(dr.bSuccess)
+            {
+                ofFile file(dr.filePath);
+                if(file.getExtension() == "xml")
+                {
+                    gui->loadSettings(file.getAbsolutePath());
+                }
+            }
+
+        }
+    }
+
+
 
 }
 
@@ -258,8 +303,9 @@ void testApp::guiEvent(ofxUIEventArgs &e)
 void testApp::update()
 {
 
-    if(ofGetFrameNum() > 1) {
-            cam.disableMouseInput();
+    if(ofGetFrameNum() > 1)
+    {
+        cam.disableMouseInput();
     }
 
     buffer.Blackout();
@@ -267,50 +313,55 @@ void testApp::update()
     float temperatureSpreadCubic = powf(temperatureSpread, 3);
     float brightnessSpreadCubic = powf(brightnessSpread, 3);
 
-    for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
+    #pragma omp parallel for
+    for(int i = 0; i < tesselation.size(); i++)
     {
-        TesselationSquare* t = *(it);
-        float tempNoise = ofNoise(t->getX()*temperatureSpreadCubic, t->getY()*temperatureSpreadCubic, temperatureTime);
-        unsigned int temp = round(ofMap(tempNoise, 0, 1, fmaxf(t->kelvinWarm, kelvinWarmRange), fminf(t->kelvinCold, kelvinColdRange)));
-        t->setTemperature(temp);
-
-        float brightness = ofNoise(t->getX()*brightnessSpreadCubic, t->getY()*brightnessSpreadCubic, brightnessTime);
-        brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
-        if(t->DMXstartAddress > 0)
+        TesselationSquare* t = tesselation[i];
+        if(t->DMXchannels.size() > 0)
         {
-            t->setBrightness(brightness);
-        }
+            float tempNoise = ofNoise(t->getX()*temperatureSpreadCubic, t->getY()*temperatureSpreadCubic, temperatureTime);
+            unsigned int temp = round(ofMap(tempNoise, 0, 1, fmaxf(t->kelvinWarm, kelvinWarmRange), fminf(t->kelvinCold, kelvinColdRange)));
+            t->setTemperature(temp);
 
-        for(std::vector<DMXchannel*>::iterator chIt = t->DMXchannels.begin(); chIt != t->DMXchannels.end(); ++chIt)
-        {
-            DMXchannel* c = *(chIt);
-            float value = 0;
-            if(c->type == DMX_CHANNEL_CW)
+            float brightness = ofNoise(t->getX()*brightnessSpreadCubic, t->getY()*brightnessSpreadCubic, brightnessTime);
+            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+            if(t->DMXstartAddress > 0)
             {
-                value = ofMap(t->temperature, t->kelvinWarm, t->kelvinCold, 0, 1.);
-                value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
+                t->setBrightness(brightness);
             }
-            if(c->type == DMX_CHANNEL_WW)
-            {
-                value = ofMap(t->temperature, t->kelvinCold, t->kelvinWarm, 0, 1.);
-                value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
-            }
-            value *= t->brightness;
 
-            if(c->width16bit)
+            for(std::vector<DMXchannel*>::iterator chIt = t->DMXchannels.begin(); chIt != t->DMXchannels.end(); ++chIt)
             {
-                unsigned int valueInt = ofMap(value, 0.,1., 0, pow(255,2));
-                buffer.SetChannel(c->address-1, valueInt/255);
-                buffer.SetChannel(c->address, valueInt%255);
-            }
-            else
-            {
-                ofLogError() << "8 bit not implemented" << std::endl;
+                DMXchannel* c = *(chIt);
+                float value = 0;
+                if(c->type == DMX_CHANNEL_CW)
+                {
+                    value = ofMap(t->temperature, t->kelvinWarm, t->kelvinCold, 0, 1.);
+                    value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
+                }
+                if(c->type == DMX_CHANNEL_WW)
+                {
+                    value = ofMap(t->temperature, t->kelvinCold, t->kelvinWarm, 0, 1.);
+                    value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
+                }
+                value *= t->brightness;
+
+                if(c->width16bit)
+                {
+                    unsigned int valueInt = ofMap(value, 0.,1., 0, pow(255,2));
+                    buffer.SetChannel(c->address-1, valueInt/255);
+                    buffer.SetChannel(c->address, valueInt%255);
+                }
+                else
+                {
+                    ofLogError() << "8 bit not implemented" << std::endl;
+                }
             }
         }
+        t->update();
     }
 
-   if (!ola_client.SendDmx(0, buffer))
+    if (!ola_client.SendDmx(0, buffer))
     {
         cout << "Send DMX failed" << endl;
     }
@@ -328,6 +379,7 @@ void testApp::draw()
 {
     ofBackgroundGradient(ofColor(40), ofColor(10), OF_GRADIENT_CIRCULAR);
     glEnable(GL_DEPTH_TEST);
+    ofEnableSmoothing();
     ofViewport(gui->getRect()->getWidth(),0,ofGetWidth()-gui->getRect()->getWidth(),ofGetHeight());
     for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
     {

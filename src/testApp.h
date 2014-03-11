@@ -177,7 +177,6 @@ class TesselationSquare : public ofPlanePrimitive, public LedFixture
 {
 public:
 
-    ofColor color;
     void setup(unsigned int startAddress = 0)
     {
         DMXstartAddress = startAddress;
@@ -193,22 +192,21 @@ public:
 
     void update()
     {
-        ;
+        drawColor = color * brightness;
+        if(DMXstartAddress > 0){
+            drawColor *= tempToColor(temperature);
+        } else {
+            drawColor *= tempToColor(round(ofMap(0.25, 0,1, kelvinCold, kelvinWarm)));
+            drawColor *= 0.75;
+        }
     };
 
     void draw()
     {
-        ofPushStyle();
-        ofColor c = color * brightness;
-        if(DMXstartAddress > 0){
-            c *= tempToColor(temperature);
-        } else {
-            c *= tempToColor(round(ofMap(0.25, 0,1, kelvinCold, kelvinWarm)));
-            c *= 0.75;
-        }
-        ofSetColor(c);
+        //ofPushStyle();
+        ofSetColor(drawColor);
         ofPlanePrimitive::draw();
-        ofPopStyle();
+        //ofPopStyle();
     };
 
     void setColor(ofColor color)
@@ -243,6 +241,9 @@ public:
 
     float brightness;
     unsigned int temperature;
+
+    ofColor color;
+    ofColor drawColor;
 
 };
 
@@ -300,5 +301,7 @@ protected:
 
     ofxUISuperCanvas *gui;
 	bool hideGUI;
+	bool bSaveSettings;
+	bool bLoadSettings;
     void guiEvent(ofxUIEventArgs &e);
 };
