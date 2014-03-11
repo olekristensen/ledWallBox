@@ -281,14 +281,22 @@ protected:
     ola::DmxBuffer buffer;
     ola::StreamingClient ola_client;
 
+    float lastFrameSeconds;
+
     unsigned int kelvinCold;
     unsigned int kelvinWarm;
+
     float kelvinWarmRange;
     float kelvinColdRange;
     float temperatureSpeed;
     float temperatureTime;
-    float lastFrameSeconds;
     float temperatureSpread;
+
+    float brightnessRangeFrom;
+    float brightnessRangeTo;
+    float brightnessSpeed;
+    float brightnessTime;
+    float brightnessSpread;
 
     ofxUISuperCanvas *gui;
 	bool hideGUI;
