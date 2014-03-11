@@ -214,6 +214,8 @@ void testApp::setGUI()
     gui->addLabel("");
     gui->addLabel("Temperature", OFX_UI_FONT_LARGE);
     gui->addSpacer();
+    gui->addLabel("Modulate the color fluctuations", OFX_UI_FONT_SMALL);
+    gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
     gui->addRangeSlider("tRange", kelvinWarm, kelvinCold, &kelvinWarmRange, &kelvinColdRange);
     gui->addSpacer();
@@ -226,6 +228,8 @@ void testApp::setGUI()
     gui->addLabel("");
     gui->addLabel("Brightness", OFX_UI_FONT_LARGE);
     gui->addSpacer();
+    gui->addLabel("Modulate the light intensities", OFX_UI_FONT_SMALL);
+    gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
     gui->addRangeSlider("bRange", 0, 1, &brightnessRangeFrom, &brightnessRangeTo);
     gui->addSpacer();
@@ -236,8 +240,12 @@ void testApp::setGUI()
     gui->addSlider("bSpread",0,1,&brightnessSpread);
     gui->addSpacer();
     gui->addLabel("");
-    gui->addLabelButton("Save", bSaveSettings);
+    gui->addLabel("Presets", OFX_UI_FONT_LARGE);
+    gui->addSpacer();
+    gui->addLabel("Keep settings as xml files", OFX_UI_FONT_SMALL);
+    gui->addSpacer();
     gui->addLabelButton("Load", bLoadSettings);
+    gui->addLabelButton("Save", bSaveSettings);
     gui->addSpacer();
     gui->addLabel("");
     gui->addFPS(OFX_UI_FONT_SMALL);
