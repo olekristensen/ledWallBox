@@ -131,7 +131,7 @@ void testApp::setup()
 
     perlinNoiseImage.allocate(int(tesselationRect.getWidth()*0.25), int(tesselationRect.getHeight()*0.25),  OF_IMAGE_COLOR);
 
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
 }
 
 ofVec3f testApp::addTesselation(ofVec3f _origin, int _size, int _width, int _height, ofVec3f** _tesselationMap)
