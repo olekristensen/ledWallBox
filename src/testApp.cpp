@@ -25,7 +25,7 @@ void testApp::setup()
     kelvinColdRange = kelvinCold;
     kelvinWarmRange = kelvinWarm;
     temperatureSpeed = 0.5;
-    temperatureSpread = 0.5;
+    temperatureSpread = 0.15;
     temperatureTime = 0;
 
     brightnessRangeFrom = 0.0;
