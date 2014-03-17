@@ -129,15 +129,6 @@ void testApp::setup()
 
     }
 
-    // Directional Lights emit light based on their orientation, regardless of their position //
-    directionalLight.setDiffuseColor(ofColor(255.f, 255.f, 255.f));
-    directionalLight.setSpecularColor(ofColor(255.f, 255.f, 255.f));
-    directionalLight.setDirectional();
-
-    // set the direction of the light
-    directionalLight.setOrientation( ofVec3f(-45, -45, 0) );
-    ofSetSmoothLighting(true);
-
     ofSetFrameRate(60);
 }
 
@@ -165,33 +156,33 @@ ofVec3f testApp::addTesselation(ofVec3f _origin, int _size, int _width, int _hei
             c = ofColor(255,255,255,255);
 
             TesselationSquare * tsq = new TesselationSquare();
-            tsq->set(_size,_size);
+            tsq->set(_size,_size, 2, 2);
             tsq->setGlobalPosition(ofVec3f(0, 0, -_size/2) + _origin + offset);
             tsq->setOrientation(ofVec3f(0,0,0));
             tsq->setup(floor(adresses->x));
             tsq->kelvinCold = kelvinCold;
             tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor(c);
+            tsq->setColor((adresses->x > 0)? c : ofColor(255,255) );
             tesselation.push_back(tsq);
 
             tsq = new TesselationSquare();
-            tsq->set(_size,_size);
+            tsq->set(_size,_size,2 ,2);
             tsq->setGlobalPosition(ofVec3f(0,_size/2,0) + _origin + offset);
             tsq->setOrientation(ofVec3f(90,0,0));
             tsq->setup(floor(adresses->y));
             tsq->kelvinCold = kelvinCold;
             tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor(c);
+            tsq->setColor((adresses->y > 0)? c : ofColor(255*0.9) );
             tesselation.push_back(tsq);
 
             tsq = new TesselationSquare();
-            tsq->set(_size,_size);
+            tsq->set(_size,_size,2,2);
             tsq->setGlobalPosition(ofVec3f(_size/2,0,0) + _origin + offset);
             tsq->setOrientation(ofVec3f(0,90,0));
             tsq->setup(floor(adresses->z));
             tsq->kelvinCold = kelvinCold;
             tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor(c);
+            tsq->setColor((adresses->z > 0)? c : ofColor(255*0.8) );
             tesselation.push_back(tsq);
 
         }
@@ -270,7 +261,7 @@ void testApp::guiEvent(ofxUIEventArgs &e)
         ofxUIButton *button = (ofxUIButton *) e.getButton();
         if(button->getValue())
         {
-            ofFileDialogResult dr = ofSystemSaveDialog( ofToDataPath("settings")+"/settings.xml", "Save settings");
+            ofFileDialogResult dr = fullScreenSaveDialog( ofToDataPath("settings")+"/settings.xml", "Save settings");
             if(dr.bSuccess)
             {
                 ofFile file(dr.filePath);
@@ -288,7 +279,7 @@ void testApp::guiEvent(ofxUIEventArgs &e)
         if(button->getValue())
         {
 
-            ofFileDialogResult dr = ofSystemLoadDialog("Load settings", false, ofToDataPath("settings")+"/*.xml");
+            ofFileDialogResult dr = fullScreenLoadDialog("Load settings", false, ofToDataPath("settings")+"/*.xml");
 
             if(dr.bSuccess)
             {
@@ -344,12 +335,12 @@ void testApp::update()
                 float value = 0;
                 if(c->type == DMX_CHANNEL_CW)
                 {
-                    value = ofMap(t->temperature, t->kelvinWarm, t->kelvinCold, 0, 1.);
+                    value = ofMap(t->temperature, t->kelvinCold, t->kelvinWarm, 0, 1.);
                     value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
                 }
                 if(c->type == DMX_CHANNEL_WW)
                 {
-                    value = ofMap(t->temperature, t->kelvinCold, t->kelvinWarm, 0, 1.);
+                    value = ofMap(t->temperature, t->kelvinWarm, t->kelvinCold, 0, 1.);
                     value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
                 }
                 value *= t->brightness;
@@ -394,17 +385,7 @@ void testApp::draw()
         TesselationSquare* t = *(it);
         cam.begin();
         ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-        if(t->DMXstartAddress < 1)
-        {
-            ofEnableLighting();
-            directionalLight.enable();
-        }
         t->draw();
-        if(t->DMXstartAddress < 1)
-        {
-            directionalLight.disable();
-            ofDisableLighting();
-        }
         cam.end();
     }
     ofViewport();

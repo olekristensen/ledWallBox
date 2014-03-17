@@ -6,6 +6,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
+#include "fullScreenDialogs.h"
 #include "ofxUI.h"
 
 enum DMXchannelType
@@ -278,7 +279,6 @@ protected:
     CameraController cameraController;
     vector<TesselationSquare*> tesselation;
     ofEasyCam cam;
-    ofLight directionalLight;
     ola::DmxBuffer buffer;
     ola::StreamingClient ola_client;
 

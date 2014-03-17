@@ -1,8 +1,12 @@
 #include "ofMain.h"
 #include "testApp.h"
+#include "ofGLProgrammableRenderer.h"
 
 //========================================================================
 int main( ){
+
+    ofSetCurrentRenderer(ofGLProgrammableRenderer::TYPE);
+
 	ofSetupOpenGL(1280,768,OF_FULLSCREEN);			// <-------- setup the GL context
 
 	// this kicks off the running of my app
