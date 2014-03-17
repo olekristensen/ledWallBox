@@ -125,9 +125,11 @@ void testApp::setup()
         t->rotateAround(rot, ofVec3f(0,0,0));
         rotQuat *= rot;
         t->setOrientation(rotQuat);
-        t->setGlobalPosition(t->getPosition()+ofVec3f(-1*tsqSize,3*tsqSize, 0));
-
+//        t->setGlobalPosition(t->getPosition()+ofVec3f(0,3*tsqSize, 0));
+        tesselationRect.growToInclude(t->getPosition());
     }
+
+    perlinNoiseImage.allocate(int(tesselationRect.getWidth()*0.25), int(tesselationRect.getHeight()*0.25),  OF_IMAGE_COLOR);
 
     ofSetFrameRate(60);
 }
@@ -210,7 +212,7 @@ void testApp::setGUI()
     gui->addSlider("tSpeed",0,1,&temperatureSpeed, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
-    gui->addSlider("tSpread",0,1,&temperatureSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
+    gui->addSlider("tSpread",0,0.33,&temperatureSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("");
     gui->addLabel("Brightness", OFX_UI_FONT_LARGE);
@@ -222,7 +224,7 @@ void testApp::setGUI()
     gui->addSlider("bSpeed",0,1,&brightnessSpeed, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
-    gui->addSlider("bSpread",0,1,&brightnessSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
+    gui->addSlider("bSpread",0,0.33,&brightnessSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("");
     gui->addLabel("Presets", OFX_UI_FONT_LARGE);
@@ -299,8 +301,32 @@ void testApp::update()
 
     buffer.Blackout();
 
-    float temperatureSpreadCubic = powf(temperatureSpread, 3);
-    float brightnessSpreadCubic = powf(brightnessSpread, 3);
+    double temperatureSpreadCubic = powf(temperatureSpread, 3);
+    double brightnessSpreadCubic = powf(brightnessSpread, 3);
+
+    int imageWidth = perlinNoiseImage.getWidth();
+    int imageHeight = perlinNoiseImage.getHeight();
+
+    for(int x = 0; x < imageWidth; x++)
+    {
+        for(int y = 0; y < imageHeight; y++)
+        {
+            double xMapped = ofMap(x, 0, imageWidth, tesselationRect.getMinX(), tesselationRect.getMaxX());
+            double yMapped = ofMap(y, imageHeight, 0, tesselationRect.getMinY(), tesselationRect.getMaxY());
+
+            float brightness = ofNoise(xMapped*brightnessSpreadCubic, yMapped*brightnessSpreadCubic, brightnessTime);
+            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+
+            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
+            unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
+
+            ofColor c = LedFixture::temperatureToColor(temp);
+            c *= brightness;
+
+            perlinNoiseImage.setColor(x,y,c);
+        }
+    }
+    perlinNoiseImage.update();
 
     #pragma omp parallel for
     for(int i = 0; i < tesselation.size(); i++)
@@ -357,7 +383,7 @@ void testApp::update()
 
     //  cameraController.update();
 
-    float now = ofGetElapsedTimef();
+    float now = ofGetElapsedTimef() + timeOffset;
     temperatureTime += powf(temperatureSpeed,8) * ( ( now - lastFrameSeconds ) / (1./60));
     brightnessTime += powf(brightnessSpeed,8) * ( ( now - lastFrameSeconds ) / (1./60));
     lastFrameSeconds = now;
@@ -381,6 +407,10 @@ void testApp::draw()
         TesselationSquare* t = *(it);
         t->draw();
     }
+    ofTranslate(0, ofGetHeight()/3);
+    ofSetColor(255);
+    glDisable(GL_DEPTH_TEST);
+    perlinNoiseImage.draw(tesselationRect.getMinX(),tesselationRect.getMinY(),tesselationRect.getWidth(), tesselationRect.getHeight());
     ofPopMatrix();
     cam.end();
     ofViewport();
@@ -397,7 +427,8 @@ void testApp::keyPressed(int key)
 //--------------------------------------------------------------
 void testApp::keyReleased(int key)
 {
-    if(key == 'f') {
+    if(key == 'f')
+    {
         ofToggleFullscreen();
     }
 }
