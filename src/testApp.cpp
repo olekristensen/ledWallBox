@@ -196,13 +196,13 @@ void testApp::setGUI()
 {
 
     gui = new ofxUISuperCanvas("LEDlys Tesselation 0.9b");
-//    gui->addSpacer();
 //    gui->addLabel("Press 'h' to Hide GUIs", OFX_UI_FONT_SMALL);
     gui->setWidth(ofGetWidth()/3.);
     gui->setFont("GUI/DroidSans.ttf");
     gui->setFontSize(OFX_UI_FONT_LARGE, 10);
     gui->setFontSize(OFX_UI_FONT_MEDIUM, 8);
     gui->setFontSize(OFX_UI_FONT_SMALL, 6);
+    gui->addLabel("");
     gui->addLabel("Temperature", OFX_UI_FONT_LARGE);
     gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
