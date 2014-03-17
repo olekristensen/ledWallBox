@@ -125,7 +125,7 @@ void testApp::setup()
         t->rotateAround(rot, ofVec3f(0,0,0));
         rotQuat *= rot;
         t->setOrientation(rotQuat);
-        t->setGlobalPosition(t->getPosition()+ofVec3f(-3*tsqSize,3*tsqSize, 0));
+        t->setGlobalPosition(t->getPosition()+ofVec3f(-1*tsqSize,3*tsqSize, 0));
 
     }
 
@@ -196,56 +196,46 @@ void testApp::setGUI()
     gui = new ofxUISuperCanvas("LEDlys Tesselation 0.9b");
 //    gui->addSpacer();
 //    gui->addLabel("Press 'h' to Hide GUIs", OFX_UI_FONT_SMALL);
-
+    gui->setWidth(ofGetWidth()/3.);
     gui->setFont("GUI/DroidSans.ttf");
     gui->setFontSize(OFX_UI_FONT_LARGE, 10);
     gui->setFontSize(OFX_UI_FONT_MEDIUM, 8);
     gui->setFontSize(OFX_UI_FONT_SMALL, 6);
-    gui->addSpacer();
-    gui->addLabel("");
     gui->addLabel("Temperature", OFX_UI_FONT_LARGE);
     gui->addSpacer();
-    gui->addLabel("Modulate the color fluctuations", OFX_UI_FONT_SMALL);
-    gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
-    gui->addRangeSlider("tRange", kelvinWarm, kelvinCold, &kelvinWarmRange, &kelvinColdRange);
+    gui->addRangeSlider("tRange", kelvinWarm, kelvinCold, &kelvinWarmRange, &kelvinColdRange, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Speed", OFX_UI_FONT_SMALL);
-    gui->addSlider("tSpeed",0,1,&temperatureSpeed);
+    gui->addSlider("tSpeed",0,1,&temperatureSpeed, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
-    gui->addSlider("tSpread",0,1,&temperatureSpread);
+    gui->addSlider("tSpread",0,1,&temperatureSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("");
     gui->addLabel("Brightness", OFX_UI_FONT_LARGE);
     gui->addSpacer();
-    gui->addLabel("Modulate the light intensities", OFX_UI_FONT_SMALL);
-    gui->addSpacer();
     gui->addLabel("Range", OFX_UI_FONT_SMALL);
-    gui->addRangeSlider("bRange", 0, 1, &brightnessRangeFrom, &brightnessRangeTo);
+    gui->addRangeSlider("bRange", 0, 1, &brightnessRangeFrom, &brightnessRangeTo, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Speed", OFX_UI_FONT_SMALL);
-    gui->addSlider("bSpeed",0,1,&brightnessSpeed);
+    gui->addSlider("bSpeed",0,1,&brightnessSpeed, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("Spread", OFX_UI_FONT_SMALL);
-    gui->addSlider("bSpread",0,1,&brightnessSpread);
+    gui->addSlider("bSpread",0,1,&brightnessSpread, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addLabel("");
     gui->addLabel("Presets", OFX_UI_FONT_LARGE);
     gui->addSpacer();
     gui->addLabel("Keep settings as xml files", OFX_UI_FONT_SMALL);
     gui->addSpacer();
-    gui->addLabelButton("Load", bLoadSettings);
-    gui->addLabelButton("Save", bSaveSettings);
+    gui->addLabelButton("Load", bLoadSettings, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
+    gui->addLabelButton("Save", bSaveSettings, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
-    gui->addLabel("");
-    gui->addFPS(OFX_UI_FONT_SMALL);
+    gui->addFPS();
 
-    //TODO: Make GUI for brightness
-
-
-    gui->autoSizeToFitWidgets();
     gui->getRect()->setHeight(ofGetHeight());
+    gui->autoSizeToFitWidgets();
 
 
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
@@ -379,15 +369,20 @@ void testApp::draw()
     ofBackgroundGradient(ofColor(40), ofColor(10), OF_GRADIENT_CIRCULAR);
     glEnable(GL_DEPTH_TEST);
     ofEnableSmoothing();
-    ofViewport(gui->getRect()->getWidth(),0,ofGetWidth()-gui->getRect()->getWidth(),ofGetHeight());
+    float viewportWidth = (ofGetWidth()-gui->getRect()->getWidth());
+    float scale = viewportWidth *1.15 / ofGetWidth();
+    ofViewport(gui->getRect()->getWidth(),0,viewportWidth,ofGetHeight());
+    cam.begin();
+    ofPushMatrix();
+    ofTranslate(viewportWidth/2, ofGetHeight()/2);
+    ofScale(scale, scale, scale);
     for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
     {
         TesselationSquare* t = *(it);
-        cam.begin();
-        ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
         t->draw();
-        cam.end();
     }
+    ofPopMatrix();
+    cam.end();
     ofViewport();
 
 //    cameraController.draw();
@@ -402,7 +397,9 @@ void testApp::keyPressed(int key)
 //--------------------------------------------------------------
 void testApp::keyReleased(int key)
 {
-    if(key == 'f') ofToggleFullscreen();
+    if(key == 'f') {
+        ofToggleFullscreen();
+    }
 }
 
 //--------------------------------------------------------------
