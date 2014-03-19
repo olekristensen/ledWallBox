@@ -6,7 +6,7 @@
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="addons/;addons/ofxArtnet/build config/;addons/ofxUI/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/flann/;addons/ofxOpenCv/libs/opencv/include/opencv/;addons/ofxOpenCv/libs/opencv/include/opencv2/gpu/;addons/ofxOsc/src/;addons/ofxCv/libs/CLD/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/video/;addons/ofxOpenCv/libs/opencv/include/opencv2/ts/;addons/ofxCv/libs/ofxCv/src/;addons/ofxOsc/libs/oscpack/src/osc/;addons/ofxOsc/libs/oscpack/src/ip/;addons/ofxOsc/libs/oscpack/src/ip/win32/;addons/ofxOpenCv/src/;addons/ofxCv/libs/ofxCv/include/ofxCv/;addons/ofxOpenCv/libs/opencv/include/opencv2/core/;addons/ofxThreadedImageLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/;addons/ofxRemoteUI/src/;addons/ofxKinect/libs/libfreenect/include/;addons/ofxXmlSettings/libs/;addons/ofxKinect/libs/libfreenect/src/;addons/ofxCv/libs/CLD/include/CLD/;addons/ofx3DModelLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/;addons/ofx3DModelLoader/src/3DS/;addons/ofxKinect/libs/libusb-1.0/include/libusb-1.0/;addons/ofxOpenCv/libs/opencv/include/opencv2/legacy/;addons/ofxXmlSettings/src/;addons/ofxOsc/libs/oscpack/src/ip/posix/;addons/ofxKinect/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/;addons/ofxCv/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/;addons/ofxOpenCv/libs/opencv/include/opencv2/ml/;addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/;addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/;addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/;addons/ofxArtnet/;addons/ofxArtnet/src/;addons/ofxArtnet/libs/;addons/ofxArtnet/libs/artnet/;addons/ofxArtnet/libs/artnet/include/;addons/ofxArtnet/libs/artnet/src/;src/;" />
+		<Option virtualFolders="addons/;addons/ofxRemoteUI/;addons/ofxArtnet/build config/;addons/ofxUI/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/flann/;addons/ofxOpenCv/libs/opencv/include/opencv/;addons/ofxOpenCv/libs/opencv/include/opencv2/gpu/;addons/ofxOsc/src/;addons/ofxCv/libs/CLD/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/video/;addons/ofxOpenCv/libs/opencv/include/opencv2/ts/;addons/ofxCv/libs/ofxCv/src/;addons/ofxOsc/libs/oscpack/src/osc/;addons/ofxOsc/libs/oscpack/src/ip/;addons/ofxOsc/libs/oscpack/src/ip/win32/;addons/ofxOpenCv/src/;addons/ofxCv/libs/ofxCv/include/ofxCv/;addons/ofxOpenCv/libs/opencv/include/opencv2/core/;addons/ofxThreadedImageLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/;addons/ofxKinect/libs/libfreenect/include/;addons/ofxXmlSettings/libs/;addons/ofxKinect/libs/libfreenect/src/;addons/ofxCv/libs/CLD/include/CLD/;addons/ofx3DModelLoader/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/;addons/ofx3DModelLoader/src/3DS/;addons/ofxKinect/libs/libusb-1.0/include/libusb-1.0/;addons/ofxOpenCv/libs/opencv/include/opencv2/legacy/;addons/ofxXmlSettings/src/;addons/ofxOsc/libs/oscpack/src/ip/posix/;addons/ofxKinect/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/;addons/ofxCv/src/;addons/ofxOpenCv/libs/opencv/include/opencv2/calib3d/;addons/ofxOpenCv/libs/opencv/include/opencv2/ml/;addons/ofxOpenCv/libs/opencv/include/opencv2/features2d/;addons/ofxOpenCv/libs/opencv/include/opencv2/objdetect/;addons/ofxOpenCv/libs/opencv/include/opencv2/highgui/;addons/ofxArtnet/;addons/ofxArtnet/src/;addons/ofxArtnet/libs/;addons/ofxArtnet/libs/artnet/;addons/ofxArtnet/libs/artnet/include/;addons/ofxArtnet/libs/artnet/src/;src/;addons/ofxUI/;addons/ofxRemoteUI/src/;" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/$(PROJECT_NAME)_debug" prefix_auto="1" extension_auto="1" />
@@ -639,40 +639,40 @@
 			<Option virtualFolder="addons/ofxOsc/src" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/RemoteParam.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/dirent_vs.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUI.cpp">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUI.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUIClient.cpp">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUIClient.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUINeigbors.cpp">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUINeigbors.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUIServer.cpp">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUIServer.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/ofxRemoteUISimpleNotifications.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxRemoteUI/src/uriencode.h">
-			<Option virtualFolder="addons/ofxRemoteUI/src" />
+			<Option virtualFolder="addons/ofxRemoteUI/src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxThreadedImageLoader/src/ofxThreadedImageLoader.cpp">
 			<Option virtualFolder="addons/ofxThreadedImageLoader/src" />
@@ -986,6 +986,24 @@
 		<Unit filename="src/CameraController.h">
 			<Option virtualFolder="src/" />
 		</Unit>
+		<Unit filename="src/LedFixture.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/LedFixture.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/darknessFollowsScene.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/darknessFollowsScene.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/ledScene.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/ledScene.h">
+			<Option virtualFolder="src/" />
+		</Unit>
 		<Unit filename="src/main.cpp">
 			<Option virtualFolder="src/" />
 		</Unit>
@@ -993,6 +1011,12 @@
 			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="src/pgCamera.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/tesselationScene.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/tesselationScene.h">
 			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="src/testApp.cpp">

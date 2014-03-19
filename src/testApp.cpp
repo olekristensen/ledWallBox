@@ -68,7 +68,7 @@ void testApp::setGUI()
     gui->addLabel("Scene", OFX_UI_FONT_LARGE);
     gui->addSpacer();
     gui->addLabel("");
-    gui->addRadio("sceneName", sceneNames)->activateToggle(sceneNames[0]);
+    gui->addRadio("sceneName", sceneNames)->activateToggle(sceneNames.back());
     gui->addSpacer();
     gui->addLabel("");
 
