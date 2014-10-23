@@ -53,7 +53,7 @@ void testApp::setup()
 
     int tsqSize = 30;
 
-    int tesselationHeight = 6;
+    int tesselationHeight = 1;
 
     // construct tesselations
 
@@ -73,43 +73,10 @@ void testApp::setup()
 
     ofVec3f * tesselation1map[] =
     {
-        NULL,               NULL,               NULL,               NULL,               NULL,               NULL,
-        new ofVec3f(0,0,53),new ofVec3f(),      NULL,               NULL,               NULL,               NULL,
-        new ofVec3f(),      new ofVec3f(),      new ofVec3f(0,0,49),new ofVec3f(0,0,33),new ofVec3f(0,0,5), NULL,
-        new ofVec3f(),      new ofVec3f(0,61,0),new ofVec3f(57,0,0),new ofVec3f(0,0,37),new ofVec3f(0,0,13),new ofVec3f(0,0,1),
-        new ofVec3f(0,0,45),new ofVec3f(),      new ofVec3f(0,0,41),new ofVec3f(0,0,29),new ofVec3f(0,0,21),new ofVec3f(0,0,9),
-        NULL,               new ofVec3f(),      new ofVec3f(),      NULL,               new ofVec3f(0,0,25),new ofVec3f(0,0,17)
+        new ofVec3f(141,129,133),new ofVec3f(137,145,149),new ofVec3f(165,153,157),new ofVec3f(161,169,173),new ofVec3f(189,177,181),new ofVec3f(185,193,197),new ofVec3f(213,201,205),new ofVec3f(209,217,221)
     };
-    int tesselation1width = 6;
+    int tesselation1width = 8;
     origin = addTesselation(origin, tsqSize, tesselation1width, tesselationHeight, tesselation1map);
-
-    ofVec3f * tesselation2map[] =
-    {
-        NULL,               NULL,               NULL,               NULL,               NULL,               NULL,
-        NULL,               new ofVec3f(),      new ofVec3f(0,0,69),NULL,               NULL,               NULL,
-        new ofVec3f(0,0,93),new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      new ofVec3f(0,0,65),NULL,
-        new ofVec3f(),      new ofVec3f(0,89,0),new ofVec3f(81,0,0),new ofVec3f(0,0,77),new ofVec3f(),      new ofVec3f(),
-        new ofVec3f(),      new ofVec3f(),      new ofVec3f(0,0,85),new ofVec3f(),      new ofVec3f(0,0,73),NULL,
-        new ofVec3f(),      NULL,               new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      NULL
-    };
-    int tesselation2width = 6;
-    origin*=1.35;
-    origin += addTesselation(origin, tsqSize, tesselation2width, tesselationHeight, tesselation2map);
-
-    ofVec3f * tesselation3map[] =
-    {
-        //  1                   2                   3                   4                   5                   6                   7                   8                   9
-        NULL,               NULL,               NULL,               new ofVec3f(),      NULL,               NULL,               NULL,               NULL,               NULL,
-        NULL,               NULL,               new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      NULL,               new ofVec3f(),      NULL,               NULL,
-        new ofVec3f(0,0,121),new ofVec3f(),     new ofVec3f(0,0,109),new ofVec3f(0,113,0),new ofVec3f(),    new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      new ofVec3f(),
-        new ofVec3f(),      new ofVec3f(),      new ofVec3f(0,125,0),new ofVec3f(105,0,0),new ofVec3f(0,0,117),new ofVec3f(0,97,0),new ofVec3f(),   new ofVec3f(),      new ofVec3f(),
-        new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      new ofVec3f(101,0,0),new ofVec3f(),     new ofVec3f(),      new ofVec3f(),
-        NULL,               NULL,               NULL,               new ofVec3f(),      new ofVec3f(),      new ofVec3f(),      NULL,               NULL,               NULL
-    };
-
-    int tesselation3width = 9;
-    origin*=1.125;
-    origin += addTesselation(origin, tsqSize, tesselation3width, tesselationHeight, tesselation3map);
 
     origin*=1.15;
 
@@ -352,12 +319,15 @@ void testApp::update()
                 if(c->type == DMX_CHANNEL_CW)
                 {
                     value = ofMap(t->temperature, t->kelvinCold, t->kelvinWarm, 0, 1.);
-                    value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
+                    value = 1.0-powf(value-1.0, 4);
+                    value *= .95;
+                    //value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
                 }
                 if(c->type == DMX_CHANNEL_WW)
                 {
                     value = ofMap(t->temperature, t->kelvinWarm, t->kelvinCold, 0, 1.);
-                    value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
+                    value = 1.0-powf(value-1.0, 4);
+                    //value = fminf(1.,ofMap(value, 0 , 0.5, 0., 1.));
                 }
                 value *= t->brightness;
 
