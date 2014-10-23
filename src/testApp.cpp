@@ -18,6 +18,12 @@ std::string exec(char* cmd)
 //--------------------------------------------------------------
 void testApp::setup()
 {
+
+    printFontHeader.loadFont("GUI/DroidSans.ttf", 12, true, true, true, 0);
+    printFontText.loadFont("GUI/DroidSans.ttf", 8, true, true, true, 0);
+
+    loadedFileName = "unsaved preset";
+
     hideGUI = false;
     kelvinCold = 6500;
     kelvinWarm = 4200;
@@ -44,56 +50,77 @@ void testApp::setup()
         std::cerr << "OLA Setup failed" << std::endl;
     }
 
-//    sourceCamera.connect();
-//	  cameraController.load("cameraSettings.xml");
-
-
     cam.setTranslationKey(' ');
     cam.enableOrtho();
 
-    int tsqSize = 30;
+    int tsqSize = 90;
 
-    int tesselationHeight = 1;
+    int wallWidth = 8;
+    int wallHeight = 3;
 
     // construct tesselations
 
     ofVec3f origin;
 
-    /** such is the mapping of dmx channels to the ofVec3f objects
-
-             /     \
-            |\  0  /|
-            | \   / |
-            |  \ /  |
-            Â­\ 1 | 2 /
-             \  |  /
-
-    **/
-
-
-    ofVec3f * tesselation1map[] =
+/* new ofVec3f(141,129,133),
+    new ofVec3f(137,145,149),
+    new ofVec3f(165,153,157),
+    new ofVec3f(161,169,173),
+    new ofVec3f(189,177,181),
+    new ofVec3f(185,193,197),
+    new ofVec3f(213,201,205),
+    new ofVec3f(209,217,221)
+*/
+    int wallMap[8][3] =
     {
-        new ofVec3f(141,129,133),new ofVec3f(137,145,149),new ofVec3f(165,153,157),new ofVec3f(161,169,173),new ofVec3f(189,177,181),new ofVec3f(185,193,197),new ofVec3f(213,201,205),new ofVec3f(209,217,221)
+        {141,129,133 },
+        {137,145,149 },
+        {165,153,157 },
+        {161,169,173 },
+        {189,177,181 },
+        {185,193,197 },
+        {213,201,205 },
+        {209,217,221 }
     };
-    int tesselation1width = 8;
-    origin = addTesselation(origin, tsqSize, tesselation1width, tesselationHeight, tesselation1map);
 
-    origin*=1.15;
+    for(int x = 0; x < wallWidth; x++){
+        for(int y = 0; y < wallHeight; y++){
 
-    ofQuaternion rot = ofQuaternion(45, ofVec3f(0,0,1), 90, ofVec3f(1,0,0), 33, ofVec3f(1,0,0));
+        int address = wallMap[x][y];
+
+        ofVec2f position(x*tsqSize, y*tsqSize);
+        position -= ofVec2f(tsqSize*wallWidth/2.0, tsqSize*wallHeight/2.0);
+
+        ofColor c = ofColor(255,255,255,255);
+
+        TesselationSquare * tsq = new TesselationSquare();
+        tsq->set(tsqSize,tsqSize, 2, 2);
+        tsq->setGlobalPosition(ofVec3f(position.x, position.y, 0));
+        tsq->setOrientation(ofVec3f(0,0,0));
+        tsq->setup(floor(address));
+        tsq->kelvinCold = kelvinCold;
+        tsq->kelvinWarm = kelvinWarm;
+        tsq->setColor((address > 0)? c : ofColor(255,255) );
+        tesselation.push_back(tsq);
+
+        }
+    }
+
+/*    ofQuaternion rot = ofQuaternion(45, ofVec3f(0,0,1), 90, ofVec3f(1,0,0), 33, ofVec3f(1,0,0));
     ofMatrix4x4 mat;
     rot.get(mat);
-
+*/
     for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
     {
         TesselationSquare* t = *(it);
-        t->setGlobalPosition(t->getPosition()-(origin*.5));
-        ofQuaternion rotQuat = t->getOrientationQuat();
-        t->rotateAround(rot, ofVec3f(0,0,0));
-        rotQuat *= rot;
-        t->setOrientation(rotQuat);
+        //t->setGlobalPosition(t->getPosition()-(origin*.5));
+        //ofQuaternion rotQuat = t->getOrientationQuat();
+        //t->rotateAround(rot, ofVec3f(0,0,0));
+        //rotQuat *= rot;
+        //t->setOrientation(rotQuat);
 //        t->setGlobalPosition(t->getPosition()+ofVec3f(0,3*tsqSize, 0));
-        tesselationRect.growToInclude(t->getPosition());
+        tesselationRect.growToInclude(t->getPosition()+ofVec3f(tsqSize/2.0, tsqSize/2.0));
+        tesselationRect.growToInclude(t->getPosition()-ofVec3f(tsqSize/2.0, tsqSize/2.0));
     }
 
     perlinNoiseImage.allocate(int(tesselationRect.getWidth()*0.25), int(tesselationRect.getHeight()*0.25),  OF_IMAGE_COLOR);
@@ -101,68 +128,10 @@ void testApp::setup()
     ofSetFrameRate(30);
 }
 
-ofVec3f testApp::addTesselation(ofVec3f _origin, int _size, int _width, int _height, ofVec3f** _tesselationMap)
-{
-
-    ofVec3f offset, firstOffset;
-
-    for (int i = 0; i < _height*_width ; i++)
-    {
-        int x = i%_width;
-        int y = i/_width;
-
-        ofColor c;
-
-        offset = ofVec3f(-x*_size,(x+y)*_size,y*_size);
-
-        if(y < 1) firstOffset = offset;
-
-        ofVec3f* adresses = _tesselationMap[((_width-1)-x)+(_width*y)];
-
-        if(adresses != NULL)
-        {
-
-            c = ofColor(255,255,255,255);
-
-            TesselationSquare * tsq = new TesselationSquare();
-            tsq->set(_size,_size, 2, 2);
-            tsq->setGlobalPosition(ofVec3f(0, 0, -_size/2) + _origin + offset);
-            tsq->setOrientation(ofVec3f(0,0,0));
-            tsq->setup(floor(adresses->x));
-            tsq->kelvinCold = kelvinCold;
-            tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor((adresses->x > 0)? c : ofColor(255,255) );
-            tesselation.push_back(tsq);
-
-            tsq = new TesselationSquare();
-            tsq->set(_size,_size,2 ,2);
-            tsq->setGlobalPosition(ofVec3f(0,_size/2,0) + _origin + offset);
-            tsq->setOrientation(ofVec3f(90,0,0));
-            tsq->setup(floor(adresses->y));
-            tsq->kelvinCold = kelvinCold;
-            tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor((adresses->y > 0)? c : ofColor(255*0.9) );
-            tesselation.push_back(tsq);
-
-            tsq = new TesselationSquare();
-            tsq->set(_size,_size,2,2);
-            tsq->setGlobalPosition(ofVec3f(_size/2,0,0) + _origin + offset);
-            tsq->setOrientation(ofVec3f(0,90,0));
-            tsq->setup(floor(adresses->z));
-            tsq->kelvinCold = kelvinCold;
-            tsq->kelvinWarm = kelvinWarm;
-            tsq->setColor((adresses->z > 0)? c : ofColor(255*0.8) );
-            tesselation.push_back(tsq);
-
-        }
-    }
-    return firstOffset;
-}
-
 void testApp::setGUI()
 {
 
-    gui = new ofxUISuperCanvas("LEDlys Tesselation 0.9b");
+    gui = new ofxUISuperCanvas("LEDlys WallBox 0.9b");
 //    gui->addLabel("Press 'h' to Hide GUIs", OFX_UI_FONT_SMALL);
     gui->setWidth(ofGetWidth()/3.);
     gui->setFont("GUI/DroidSans.ttf");
@@ -200,6 +169,7 @@ void testApp::setGUI()
     gui->addSpacer();
     gui->addLabelButton("Load", bLoadSettings, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addLabelButton("Save", bSaveSettings, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
+    gui->addLabelButton("Save PDFs", bSavePDF, gui->getRect()->getWidth()-8, 30)->setColorBack(ofColor(48,48,48));
     gui->addSpacer();
     gui->addFPS();
 
@@ -246,9 +216,37 @@ void testApp::guiEvent(ofxUIEventArgs &e)
                 if(file.getExtension() == "xml")
                 {
                     gui->loadSettings(file.getAbsolutePath());
+                    loadedFileName = file.getBaseName();
                 }
             }
 
+        }
+    }
+    else if(name == "Save PDFs")
+    {
+        ofxUIButton *button = (ofxUIButton *) e.getButton();
+        if(button->getValue())
+        {
+
+
+            string path = ofToDataPath("settings");
+            ofDirectory dir(path);
+            //only show png files
+            dir.allowExt("xml");
+            //populate the directory object
+            dir.listDir();
+
+            //go through and print out all the paths
+            for(int i = 0; i < dir.numFiles(); i++)
+            {
+                ofLogNotice(dir.getPath(i));
+                ofFile file(dir.getPath(i));
+                gui->loadSettings(file.getAbsolutePath());
+                loadedFileName = file.getBaseName();
+                bSavePDF = true;
+                update();
+                draw();
+            }
         }
     }
 
@@ -274,6 +272,8 @@ void testApp::update()
     int imageWidth = perlinNoiseImage.getWidth();
     int imageHeight = perlinNoiseImage.getHeight();
 
+    float zoomFactor = 0.33;
+
     for(int x = 0; x < imageWidth; x++)
     {
         for(int y = 0; y < imageHeight; y++)
@@ -281,10 +281,10 @@ void testApp::update()
             double xMapped = ofMap(x, 0, imageWidth, tesselationRect.getMinX(), tesselationRect.getMaxX());
             double yMapped = ofMap(y, imageHeight, 0, tesselationRect.getMinY(), tesselationRect.getMaxY());
 
-            float brightness = ofNoise(xMapped*brightnessSpreadCubic, yMapped*brightnessSpreadCubic, brightnessTime);
+            float brightness = ofNoise(xMapped*brightnessSpreadCubic*zoomFactor, yMapped*brightnessSpreadCubic*zoomFactor, brightnessTime);
             brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
 
-            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
+            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic*zoomFactor, yMapped*temperatureSpreadCubic*zoomFactor, temperatureTime);
             unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
 
             ofColor c = LedFixture::temperatureToColor(temp);
@@ -301,11 +301,11 @@ void testApp::update()
         TesselationSquare* t = tesselation[i];
         if(t->DMXchannels.size() > 0)
         {
-            float tempNoise = ofNoise(t->getX()*temperatureSpreadCubic, t->getY()*temperatureSpreadCubic, temperatureTime);
+            float tempNoise = ofNoise(t->getX()*temperatureSpreadCubic*zoomFactor, t->getY()*temperatureSpreadCubic*zoomFactor, temperatureTime);
             unsigned int temp = round(ofMap(tempNoise, 0, 1, fmaxf(t->kelvinWarm, kelvinWarmRange), fminf(t->kelvinCold, kelvinColdRange)));
             t->setTemperature(temp);
 
-            float brightness = ofNoise(t->getX()*brightnessSpreadCubic, t->getY()*brightnessSpreadCubic, brightnessTime);
+            float brightness = ofNoise(t->getX()*brightnessSpreadCubic*zoomFactor, t->getY()*brightnessSpreadCubic*zoomFactor, brightnessTime);
             brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
             if(t->DMXstartAddress > 0)
             {
@@ -362,6 +362,157 @@ void testApp::update()
 //--------------------------------------------------------------
 void testApp::draw()
 {
+
+       if( bSavePDF )
+    {
+        ofBeginSaveScreenAsPDF(loadedFileName+" - "+ofGetTimestampString()+".pdf", false);
+        ofBackground(255);
+        ofSetColor(255);
+        ofPushMatrix();{
+
+        ofTranslate(-ofGetWidth()/4.7,ofGetWidth()/180);
+        float manualScaleFactor = 0.829;
+
+        // perlin noise
+
+        ofPushMatrix();
+        {
+            ofTranslate(ofGetWidth()/2.0, ofGetHeight()/2.0);
+            ofTranslate(0, -ofGetHeight()/4.0);
+
+            float scaleFactor = tesselationRect.getWidth() / perlinNoiseImage.getWidth();
+            ofScale(scaleFactor, scaleFactor);
+
+            ofScale(manualScaleFactor,manualScaleFactor);
+            ofTranslate(-perlinNoiseImage.getWidth()/2.0, -perlinNoiseImage.getHeight()/2.0);
+            perlinNoiseImage.draw(0,0);
+
+            // data
+
+            ofTranslate(0, perlinNoiseImage.getHeight() * 3.0);
+
+            ofScale(1.0/manualScaleFactor,1.0/manualScaleFactor); // negate the manual scale
+            ofScale(1.0/scaleFactor, 1.0/scaleFactor); // negate the automatic scale
+
+            ofSetColor(0,255);
+            ofTranslate(0, -72);
+
+            printFontHeader.drawStringAsShapes(loadedFileName,0,0);
+
+            float textBoxWidth = (perlinNoiseImage.getWidth()*scaleFactor*0.7725*1.74);
+            float columnWidth = textBoxWidth/3.0;
+            float graphWidth = columnWidth * 0.7;
+            float valueTextWidth = columnWidth - graphWidth ;
+            float columnOffsetWidth = columnWidth + (valueTextWidth/2.0);
+
+            ofTranslate(columnOffsetWidth, 0);
+
+            ofSetColor(64,255);
+
+            ofPushMatrix();
+            {
+
+                printFontHeader.drawStringAsShapes("Temperature",0,0);
+
+                ofTranslate(0, 24);
+
+                /* void testApp::drawSliderForPdf(string name,
+                                                  float x, float y, float width, float height,
+                                                  float valueMin, float valueMax,
+                                                  float value,
+                                                  float valueLow, float valueHigh){
+                */
+
+                drawSliderForPdf("range",
+                                 0, 0, graphWidth, 12,
+                                 kelvinWarm, kelvinCold,
+                                 0,
+                                 kelvinWarmRange, kelvinColdRange);
+
+                ofTranslate(0, 24);
+
+                drawSliderForPdf("speed",
+                                 0, 0, graphWidth, 12,
+                                 0, 1,
+                                 temperatureSpeed);
+
+                ofTranslate(0, 24);
+
+                drawSliderForPdf("spread",
+                                 0, 0, graphWidth, 12,
+                                 0, 1,
+                                 temperatureSpread);
+
+            }
+            ofPopMatrix();
+
+            ofTranslate(columnOffsetWidth, 0);
+
+            ofPushMatrix();
+            {
+
+                printFontHeader.drawStringAsShapes("Brightness",0,0);
+
+                ofTranslate(0, 24);
+
+                /* void testApp::drawSliderForPdf(string name,
+                                                  float x, float y, float width, float height,
+                                                  float valueMin, float valueMax,
+                                                  float value,
+                                                  float valueLow, float valueHigh){
+                */
+
+                drawSliderForPdf("range",
+                                 0, 0, graphWidth, 12,
+                                 0, 1,
+                                 0,
+                                 brightnessRangeFrom, brightnessRangeTo);
+
+                ofTranslate(0, 24);
+
+                drawSliderForPdf("speed",
+                                 0, 0, graphWidth, 12,
+                                 0, 1,
+                                 brightnessSpeed);
+
+                ofTranslate(0, 24);
+
+                drawSliderForPdf("spread",
+                                 0, 0, graphWidth, 12,
+                                 0, 1,
+                                 brightnessSpread);
+
+            }
+            ofPopMatrix();
+
+
+        }
+        ofPopMatrix();
+
+        // tesselation
+
+        ofPushMatrix();
+        {
+            ofTranslate(ofGetWidth()/2.0, ofGetHeight()/2.0);
+            ofScale(manualScaleFactor,manualScaleFactor);
+            ofTranslate(45, 25, 0);
+
+            for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
+            {
+                TesselationSquare* t = *(it);
+                t->drawForPdf();
+            }
+
+        }
+        ofPopMatrix();
+
+            }ofPopMatrix();
+
+        ofEndSaveScreenAsPDF();
+        bSavePDF = false;
+    }
+
+
     ofBackgroundGradient(ofColor(40), ofColor(10), OF_GRADIENT_CIRCULAR);
     glEnable(GL_DEPTH_TEST);
     ofEnableSmoothing();
@@ -370,7 +521,7 @@ void testApp::draw()
     ofViewport(gui->getRect()->getWidth(),0,viewportWidth,ofGetHeight());
     cam.begin();
     ofPushMatrix();
-    ofTranslate(viewportWidth/2, ofGetHeight()/2);
+    ofTranslate(viewportWidth/2, ofGetHeight()/2.5);
     ofScale(scale, scale, scale);
     for(std::vector<TesselationSquare*>::iterator it = tesselation.begin(); it != tesselation.end(); ++it)
     {
@@ -442,5 +593,54 @@ void testApp::gotMessage(ofMessage msg)
 //--------------------------------------------------------------
 void testApp::dragEvent(ofDragInfo dragInfo)
 {
+
+}
+
+void testApp::drawSliderForPdf(string name, float x, float y, float width, float height,
+                               float valueMin, float valueMax, float value, float valueLow, float valueHigh)
+{
+    ofFill();
+
+    ofPushStyle();
+    ofSetColor((ofGetStyle().color * 0.5)+127);
+    ofRect(x,y,width,height);
+    ofPopStyle();
+
+    string valueString = "";
+
+    if(valueHigh == -1 && valueLow == -1)
+    {
+        ofRect(x, y, ofMap(value, valueMin, valueMax, 0, width), height);
+        valueString = ofToString(value);
+    }
+    else
+    {
+        ofRect(x + ofMap(valueLow, valueMin, valueMax, 0, width), y, ofMap(valueHigh, valueMin, valueMax, 0, width-ofMap(valueLow, valueMin, valueMax, 0, width)), height);
+        int rounding = ((valueMax - valueMin) / 1000.0 > 1.0 )? 0 : 3;
+        valueString = ofToString(valueLow, rounding) + " ... " + ofToString(valueHigh, rounding);
+    }
+
+    ofPushMatrix();
+
+    ofTranslate(-(printFontText.stringWidth(name)+height), height);
+    printFontText.drawStringAsShapes(name, 0, 0);
+
+    ofPopMatrix();
+
+    ofPushMatrix();
+
+    ofTranslate(width+height, height);
+    printFontText.drawStringAsShapes(valueString, 0, 0);
+
+    ofPopMatrix();
+
+    /*  outline
+
+        ofNoFill();
+        ofPushStyle();
+        ofSetColor((ofGetStyle().color * 0.5)+127);
+        ofRect(x,y,width,height);
+        ofPopStyle();
+    */
 
 }

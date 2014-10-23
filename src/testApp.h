@@ -1,8 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "pgCamera.h"
-#include "CameraController.h"
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -217,6 +215,37 @@ public:
         //ofPopStyle();
     };
 
+    void drawForPdf()
+    {
+        ofFill();
+
+        if(DMXstartAddress > 0)
+        {
+            ofSetColor(drawColor);
+        }
+        else
+        {
+            ofColor emptyColor = (drawColor * 0.75) + 80;
+            ofSetColor(emptyColor);
+        }
+
+        ofMatrix4x4 localMatrix = ofNode::getLocalTransformMatrix();
+        ofPrimitiveMode mode = getMesh().getMode();
+        vector< ofVec3f > verts = ofPlanePrimitive::getMesh().getVertices();
+        ofBeginShape();
+            for(int i = 0; i < verts.size(); i++)
+            {
+                int vi = i;
+                if(i == 0) vi = 1;
+                if(i == 1) vi = 0;
+                ofVec3f v = verts[vi];
+                ofVec3f vTransformed = v * 1.005 * localMatrix;
+                vTransformed *= ofVec2f(1,-1);
+                ofVertex(vTransformed);
+            }
+        ofEndShape();
+    }
+
     void setColor(ofColor color)
     {
         this->color = color;
@@ -274,16 +303,13 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-
+    void drawSliderForPdf(string name, float x, float y, float width, float height, float valueMin, float valueMax, float value, float valueLow = -1, float valueHigh = -1);
     void setGUI();
-
-    ofVec3f addTesselation(ofVec3f _origin, int _size, int _width, int _height, ofVec3f** _tesselationMap);
 
 protected:
     //pgCamera sourceCamera;
     //pgCamera destinationCamera;
 
-    CameraController cameraController;
     vector<TesselationSquare*> tesselation;
     ofEasyCam cam;
     ola::DmxBuffer buffer;
@@ -315,5 +341,12 @@ protected:
     bool hideGUI;
     bool bSaveSettings;
     bool bLoadSettings;
+    bool bSavePDF;
     void guiEvent(ofxUIEventArgs &e);
+
+    ofTrueTypeFont printFontHeader;
+    ofTrueTypeFont printFontText;
+
+    string loadedFileName;
+
 };
