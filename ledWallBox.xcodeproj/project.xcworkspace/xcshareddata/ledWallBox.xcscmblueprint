@@ -1,0 +1,51 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "B0CCE45521269233B63FEF8C9AF4030CD2F9B60D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "7E804D925461714118DB355C65BC964B41D94376" : 9223372036854775807,
+    "1C584D82D8F91B619E103DBEA051F0CCC0070ED3" : 9223372036854775807,
+    "5ED34DB3F2B79485CDDEB7F4106B4602D562F986" : 9223372036854775807,
+    "926E79937B1D74080D6099615F18FF8D46E99FB5" : 9223372036854775807,
+    "B0CCE45521269233B63FEF8C9AF4030CD2F9B60D" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "99E608DC-EF31-448D-B204-8017F6E2B349",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "7E804D925461714118DB355C65BC964B41D94376" : "..\/..\/addons\/ofxUI",
+    "1C584D82D8F91B619E103DBEA051F0CCC0070ED3" : "..\/..\/addons\/ofxDmx",
+    "5ED34DB3F2B79485CDDEB7F4106B4602D562F986" : "..\/..\/addons\/ofxOlaShaderLight",
+    "926E79937B1D74080D6099615F18FF8D46E99FB5" : "..\/..\/addons\/ofxUbo",
+    "B0CCE45521269233B63FEF8C9AF4030CD2F9B60D" : "ledWallBox\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "ledWallBox",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ledWallBox.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/intermedialab\/ofxDmx.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "1C584D82D8F91B619E103DBEA051F0CCC0070ED3"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/olekristensen\/ofxOlaShaderLight.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "5ED34DB3F2B79485CDDEB7F4106B4602D562F986"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/olekristensen\/ofxUI.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7E804D925461714118DB355C65BC964B41D94376"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/olekristensen\/ofxUbo.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "926E79937B1D74080D6099615F18FF8D46E99FB5"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/olekristensen\/ledWallBox.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B0CCE45521269233B63FEF8C9AF4030CD2F9B60D"
+    }
+  ]
+}
